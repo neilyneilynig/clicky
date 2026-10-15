@@ -1,7 +1,7 @@
 # Clicky — Design
 
 **Date:** 2026-10-14
-**Status:** Approved in chat, pending spec review
+**Status:** Implemented
 
 ## Purpose
 
@@ -112,3 +112,57 @@ All under `~/Projects/clicky/`, package `clicky/`.
 ## Out of scope
 
 Voice input/output, API-key backend, multi-monitor support, settings UI.
+
+---
+
+## Revision 2 (2026-10-15): faster, more capable, Clicky is the cursor
+
+Approved in chat. Supersedes the sections above where they conflict.
+
+### Speed
+- Screenshot captured at logical size (`grim -s 1`), so image pixels equal overlay
+  coordinates. Sent inline (`--input-format stream-json`) instead of via the Read tool.
+- `claude -p` runs with Sonnet at low effort and skips MCP servers, skills, hooks and
+  settings. Measured ~6 s end to end (was ~11 s).
+- Clicky hides itself for ~120 ms while the screenshot is taken; while Claude works it
+  shows only a small bouncing-dots pill.
+
+### Clicky is the cursor
+- The blue pointer's tip sits exactly on the mouse (no offset) and Hyprland's cursor is
+  hidden (`cursor:invisible`). When Clicky flies to a target, the real cursor is shown
+  again. The cursor is restored on quit and by the `bin/clicky` wrapper on crash.
+
+### Keys
+| Key | Command | Does |
+|---|---|---|
+| Super+Shift+C | `ask` | Ask box |
+| Super+Shift+G | `next` | Next step / dismiss |
+| Super+Shift+I | `explain` | Explain or fix the highlighted (primary selection) text |
+| Super+Shift+S | `copy` | Copy the answer's snippet/command to the clipboard |
+| Super+Shift+R | `do` | Perform the current step (click there or type its text) |
+| Super+Shift+W | `watch toggle` | Watch mode |
+
+### Reply schema
+`{"say", "copy": str|null, "steps": [{"text", "x", "y", "do": "click"|"type"|null, "input": str|null}]}`.
+Watch replies add `"kind": "error"|"tip"|"none"` and `"signature"` (short stable id of
+the error). A `copy` value is shown monospaced in the bubble with a copy hint; a step
+with `do` shows a "Super+Shift+R do it" hint. Nothing is clicked or typed without the
+key press.
+
+### Run & check
+When the focused window is a terminal whose shell sits in a project directory (has
+`.git` or a common project marker), Claude gets `Read`, `Grep`, `Glob` and a Bash
+allow-list scoped to that directory: `git status/diff/log/show`, `ls`, and test
+runners (`pytest`, `npm test`, `cargo test`, `go test`). Anything else is denied. Test
+runners execute project code; accepted.
+
+### Actions
+`wtype` types text; `hyprctl dispatch movecursor` + `wlrctl pointer click left` clicks.
+Missing tools produce a bubble saying which package to install.
+
+### Watch mode
+- Screen-change check every 20 s (local thumbnail diff, free).
+- Claude (Haiku, low effort) at most once per 45 s, only when the screen changed.
+- `error` replies show immediately with steps that point at the problem.
+- Same `signature` still present ≥ 3 min later → "Still stuck on …? Super+Shift+C".
+- `tip` replies at most once per 10 min.

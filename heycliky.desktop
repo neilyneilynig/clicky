@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Hey Clicky
+Comment=An on-screen coding assistant
+Exec=/home/neil/.local/bin/heycliky ask
+Icon=heycliky
+Terminal=false
+Categories=Development;
+Keywords=AI;Coding;Assistant;
+StartupNotify=false

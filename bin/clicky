@@ -1,0 +1,17 @@
+#!/bin/sh
+# gtk4-layer-shell must initialize before GTK's Wayland client library.
+script_path=$(readlink -f -- "$0")
+cd "$(dirname "$script_path")/.." || exit 1
+export LD_PRELOAD=/usr/lib/libgtk4-layer-shell.so
+if [ "${1:-run}" != run ]; then
+    exec /usr/bin/python3 -m clicky.cli "$@"
+fi
+
+# Clicky hides Hyprland's cursor while it stands in for it; give it back however it ends.
+restore_cursor() { hyprctl keyword cursor:invisible false >/dev/null 2>&1; }
+trap 'restore_cursor; exit 130' INT TERM
+/usr/bin/python3 -m clicky.cli "$@"
+status=$?
+# 3 means another Clicky is already running and still owns the cursor.
+[ "$status" -eq 3 ] || restore_cursor
+exit "$status"
