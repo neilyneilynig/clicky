@@ -1,6 +1,6 @@
 # Hey Clicky
 
-Hey Clicky is an on-screen coding assistant for a single-monitor Hyprland desktop. Ask
+Hey Clicky is an on-screen coding assistant for Hyprland (one or more monitors; it follows your mouse). Ask
 it a question with a hotkey; it screenshots your current screen, asks your signed-in
 Claude Code CLI for help, then a blue pointer flies to each relevant spot on screen
 and walks you through the steps.
